@@ -198,3 +198,5 @@ A healthy training graph looks like this:
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
+# trash-classification-recognition-python
+A trained model that be able to recognizes trash classification based on images given (as input).
