@@ -1,29 +1,13 @@
-# ============================================================
-# IMAGE CLASSIFICATION WITH A NEURAL NETWORK
-# Built for high school learners — every line explained!
-# ============================================================
-
-# --- IMPORTS ---
-# Think of imports like "loading tools from a toolbox"
-
 import os                        # Helps us work with files and folders
-import numpy as np               # "NumPy" — great for math and working with arrays (grids of numbers)
+import numpy as np               # Great for math and working with arrays (grids of numbers)
 import matplotlib.pyplot as plt  # For drawing graphs and showing images
 
-# TensorFlow & Keras — the main deep learning library we use to BUILD the neural network
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-# These help us prepare image data before feeding it to the neural network
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.utils import image_dataset_from_directory
-
-# ============================================================
-# SECTION 1: CONFIGURATION
-# These are settings you can easily change without touching the
-# rest of the code.
-# ============================================================
 
 IMG_HEIGHT   = 128      # Each image will be resized to 128 pixels tall
 IMG_WIDTH    = 128      # Each image will be resized to 128 pixels wide
@@ -33,29 +17,10 @@ LEARNING_RATE = 0.001   # How big of a step the model takes when learning (small
 
 DATASET_DIR = "datasets"   # Change this to wherever your images are stored
 
-# ============================================================
-# SECTION 2: LOAD THE DATA
-# We read images from folders. Keras automatically uses the
-# folder names as class labels (e.g. "cats", "dogs").
-# ============================================================
-
 def load_data(dataset_dir):
-    """
-    Loads training and validation image datasets from a folder.
-
-    'Training data'   = images the model LEARNS from
-    'Validation data' = images used to CHECK how well it learned
-                        (model never trains on these — it's like a practice test!)
-    """
-
     train_dir = os.path.join(dataset_dir, "train")  # Path: dataset/train
     val_dir   = os.path.join(dataset_dir, "val")    # Path: dataset/val
 
-    # image_dataset_from_directory:
-    #   - Reads all images from subfolders
-    #   - Automatically assigns labels based on folder names
-    #   - Resizes every image to our target size
-    #   - Groups images into batches
     train_dataset = image_dataset_from_directory(
         train_dir,
         image_size=(IMG_HEIGHT, IMG_WIDTH),  # Resize all images to the same size
@@ -80,21 +45,7 @@ def load_data(dataset_dir):
 
     return train_dataset, val_dataset, class_names
 
-
-# ============================================================
-# SECTION 3: DATA AUGMENTATION
-# Augmentation = making artificial variations of training images
-# so the model sees more variety and doesn't just memorize.
-#
-# Example: flip a cat photo left-right → still a cat photo,
-#          but the model sees it as "new" data!
-# ============================================================
-
 def build_augmentation_layer():
-    """
-    Returns a Sequential block of random image transformations.
-    These are ONLY applied during training, not during validation.
-    """
     return keras.Sequential([
         layers.RandomFlip("horizontal"),        # 50% chance: flip image left-to-right
         layers.RandomRotation(0.1),             # Randomly rotate up to 10% of 360° (~36 degrees)
@@ -102,28 +53,7 @@ def build_augmentation_layer():
         layers.RandomBrightness(0.1),           # Randomly tweak brightness ±10%
     ], name="data_augmentation")
 
-
-# ============================================================
-# SECTION 4: BUILD THE NEURAL NETWORK MODEL
-#
-# Our model is a CNN — Convolutional Neural Network.
-# CNNs are specially designed for images.
-#
-# Here's the intuition:
-#   Conv2D layers → "look" at small patches of the image to detect features
-#                   (edges, colors, shapes, textures...)
-#   MaxPooling    → shrink the image down (keep only the strongest signals)
-#   Dense layers  → make the final decision based on all detected features
-# ============================================================
-
 def build_model(num_classes):
-    """
-    Builds and returns a CNN model.
-
-    num_classes = how many categories to predict
-                  (e.g. 3 if you have cats, dogs, birds)
-    """
-
     augmentation = build_augmentation_layer()
 
     # keras.Sequential: layers stacked one after another, like a pipeline
@@ -148,6 +78,7 @@ def build_model(num_classes):
         # Conv2D: Scans 32 tiny 3×3 "filters" across the image
         # Each filter learns to detect something (e.g. a horizontal edge)
         layers.Conv2D(32, (3, 3), activation="relu", padding="same"),
+        
         # ReLU activation: turns negative numbers to 0 (adds non-linearity — makes the model smarter)
         # padding="same": keeps the image the same size after convolution
 
@@ -185,16 +116,10 @@ def build_model(num_classes):
 
         layers.Dropout(0.25),
 
-        # ==============================
-        # TRANSITION: 2D → 1D
-        # ==============================
         layers.Flatten(),
         # Flatten: takes the 2D feature map and stretches it into a 1D list
         # Like unrolling a grid into a single long row of numbers
 
-        # ==============================
-        # FULLY CONNECTED (DENSE) LAYERS
-        # ==============================
         layers.Dense(256, activation="relu"),
         # Dense: every neuron connects to every neuron in the previous layer
         # 256 neurons = 256 "opinions" about what the image might be
@@ -202,9 +127,6 @@ def build_model(num_classes):
         layers.Dropout(0.5),
         # Higher dropout here (50%) — Dense layers are prone to overfitting
 
-        # ==============================
-        # OUTPUT LAYER
-        # ==============================
         layers.Dense(num_classes, activation="softmax"),
         # num_classes neurons — one for each category
         # Softmax: converts outputs into probabilities that sum to 1.0
@@ -278,11 +200,6 @@ def get_callbacks():
 # ============================================================
 
 def plot_training_history(history):
-    """
-    'history' is the object returned by model.fit().
-    It records accuracy and loss for every epoch.
-    """
-
     acc     = history.history["accuracy"]
     val_acc = history.history["val_accuracy"]
     loss     = history.history["loss"]
@@ -311,7 +228,7 @@ def plot_training_history(history):
     axes[1].set_ylabel("Loss")
     axes[1].legend()
     axes[1].grid(True, alpha=0.3)
-    # TIP: Loss should go DOWN over time. If val_loss starts rising → overfitting
+    # Loss should go DOWN over time. If val_loss starts rising, it means overfitting.
 
     plt.tight_layout()
     plt.savefig("training_history.png", dpi=150, bbox_inches="tight")
@@ -325,9 +242,6 @@ def plot_training_history(history):
 # ============================================================
 
 def predict_image(model, image_path, class_names):
-    """
-    Load a single image and have the model predict its class.
-    """
     # Load & resize the image to match our training size
     img = keras.utils.load_img(image_path, target_size=(IMG_HEIGHT, IMG_WIDTH))
 
@@ -370,6 +284,7 @@ def main():
     num_classes = len(class_names)
 
     # --- Step 2: Optimize data loading speed ---
+    
     # AUTOTUNE lets TensorFlow decide the best number of parallel threads
     AUTOTUNE = tf.data.AUTOTUNE
     train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
