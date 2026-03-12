@@ -17,6 +17,7 @@ LEARNING_RATE = 0.001   # How big of a step the model takes when learning (small
 
 DATASET_DIR = "datasets"   # Change this to wherever your images are stored
 
+
 def load_data(dataset_dir):
     train_dir = os.path.join(dataset_dir, "train")  # Path: dataset/train
     val_dir   = os.path.join(dataset_dir, "val")    # Path: dataset/val
@@ -45,6 +46,7 @@ def load_data(dataset_dir):
 
     return train_dataset, val_dataset, class_names
 
+
 def build_augmentation_layer():
     return keras.Sequential([
         layers.RandomFlip("horizontal"),        # 50% chance: flip image left-to-right
@@ -52,6 +54,7 @@ def build_augmentation_layer():
         layers.RandomZoom(0.1),                 # Randomly zoom in/out by up to 10%
         layers.RandomBrightness(0.1),           # Randomly tweak brightness ±10%
     ], name="data_augmentation")
+
 
 def build_model(num_classes):
     augmentation = build_augmentation_layer()
@@ -166,7 +169,7 @@ def get_callbacks():
         # ModelCheckpoint: saves the model whenever validation accuracy improves
         # → you keep the BEST version, not the last version
         keras.callbacks.ModelCheckpoint(
-            filepath="best_model.keras",
+            filepath="models/best_model.keras",
             monitor="val_accuracy",    # Watch validation accuracy
             save_best_only=True,       # Only save if it's better than before
             verbose=1                  # Print a message when it saves
@@ -231,51 +234,9 @@ def plot_training_history(history):
     # Loss should go DOWN over time. If val_loss starts rising, it means overfitting.
 
     plt.tight_layout()
-    plt.savefig("training_history.png", dpi=150, bbox_inches="tight")
+    plt.savefig("images/training_history.png", dpi=150, bbox_inches="tight")
     plt.show()
     print("Training graph saved as 'training_history.png'")
-
-
-# ============================================================
-# SECTION 8: PREDICT ON A SINGLE IMAGE
-# After training, use the model to classify a new image
-# ============================================================
-
-def predict_image(model, image_path, class_names):
-    # Load & resize the image to match our training size
-    img = keras.utils.load_img(image_path, target_size=(IMG_HEIGHT, IMG_WIDTH))
-
-    # Convert image to a NumPy array of pixel values
-    img_array = keras.utils.img_to_array(img)
-
-    # The model expects a BATCH of images, not just one.
-    # np.expand_dims adds an extra dimension: shape (H, W, 3) → (1, H, W, 3)
-    img_array = np.expand_dims(img_array, axis=0)
-
-    # model.predict() returns probabilities for each class
-    predictions = model.predict(img_array, verbose=0)  # shape: (1, num_classes)
-    predictions = predictions[0]                       # grab the single result
-
-    # np.argmax finds the index of the highest probability
-    predicted_index = np.argmax(predictions)
-    predicted_class = class_names[predicted_index]
-    confidence      = predictions[predicted_index] * 100
-
-    print(f"\n>>> Prediction for: {image_path}")
-    print(f"   - Predicted class : {predicted_class}")
-    print(f"   - Confidence      : {confidence:.1f}%")
-    print(f"   - All probabilities:")
-    for name, prob in zip(class_names, predictions):
-        bar = "█" * int(prob * 20)
-        print(f"      {name:<15} {prob*100:5.1f}%  {bar}")
-
-    return predicted_class, confidence
-
-
-# ============================================================
-# SECTION 9: MAIN — TIE EVERYTHING TOGETHER
-# This is where the full training pipeline runs
-# ============================================================
 
 def main():
     # --- Step 1: Load data ---
@@ -320,7 +281,7 @@ def main():
 
     plot_training_history(history)
 
-    model.save("model_final.keras")
+    model.save("models/model_final.keras")
     print("\n>>> Model saved as 'model_final.keras'")
     print("   (Load it later with: model = keras.models.load_model('model_final.keras'))")
 

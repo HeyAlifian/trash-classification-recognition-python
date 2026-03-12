@@ -17,7 +17,7 @@ A deep learning project that uses a **Convolutional Neural Network (CNN)** to au
 ## Overview
 
 ### What does it do?
-This project trains a neural network to look at a photo of a piece of trash and predict what **category** it belongs to — for example:
+This project trains a neural network to look at a photo of a piece of trash and predict what **category** it belongs to, for example:
 
 | Input (Image) | Predicted Label |
 |---|---|
@@ -97,10 +97,10 @@ The script will automatically:
 5. Generate a training graph as `training_graph.png`
 
 ### Predict a new image
-After training, you can classify a new image by adding this to the bottom of the script:
+To predict a new image, you can run `app.py` by this command into your terminal:
 
-```python
-predict_image(model, "images\b058a-bottle-trash.jpg", class_names)
+```bash
+python app.py
 ```
 
 Example output:
@@ -197,6 +197,4 @@ A healthy training graph looks like this:
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
-# trash-classification-recognition-python
-A trained model that be able to recognizes trash classification based on images given (as input).
+This project is open source and available under the [MIT License](LICENSE)
