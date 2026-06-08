@@ -167,9 +167,6 @@ Instead of looking at the whole image at once, a CNN scans it with tiny filters 
 - **Layer 2** → Medium things: corners, curves, shapes
 - **Layer 3** → Complex things: textures, object parts
 
-### Layer-by-layer breakdown
-![alt text](images/layer-by-layer.png)
-
 ### Key training settings
 
 | Setting | Value | Why |
