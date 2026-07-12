@@ -4,21 +4,14 @@ from tensorflow import keras
 from tensorflow.keras.utils import image_dataset_from_directory
 
 def predict_image(model, image_path, class_names):
-    # Load & resize the image to match our training size
     img = keras.utils.load_img(image_path, target_size=(IMG_HEIGHT, IMG_WIDTH))
 
-    # Convert image to a NumPy array of pixel values
     img_array = keras.utils.img_to_array(img)
-
-    # The model expects a BATCH of images, not just one.
-    # np.expand_dims adds an extra dimension: shape (H, W, 3) → (1, H, W, 3)
     img_array = np.expand_dims(img_array, axis=0)
 
-    # model.predict() returns probabilities for each class
-    predictions = model.predict(img_array, verbose=0)  # shape: (1, num_classes)
-    predictions = predictions[0]                       # grab the single result
-
-    # np.argmax finds the index of the highest probability
+    predictions = model.predict(img_array, verbose=0)
+    predictions = predictions[0]
+    
     predicted_index = np.argmax(predictions)
     predicted_class = class_names[predicted_index]
     confidence      = predictions[predicted_index] * 100
@@ -44,7 +37,7 @@ if __name__ == "__main__":
         image_size=(IMG_HEIGHT, IMG_WIDTH),
         batch_size=BATCH_SIZE,
         label_mode="categorical",
-        shuffle=False,                       # No need to shuffle validation data
+        shuffle=False,
         seed=42
     )
 
